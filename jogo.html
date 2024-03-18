@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CommuniQuest</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap">
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        text-align: center;
+        background-color: #1e1e1e; /* Cor de fundo escura */
+        color: #fff; /* Cor do texto */
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+    #container {
+        max-width: 400px;
+        background-color: #333; /* Cor do container */
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    }
+    h1 {
+        font-size: 36px;
+        margin-bottom: 20px;
+        color: #fff; /* Cor do título */
+    }
+    #question {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    #options {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+    button {
+        margin: 0 10px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50; /* Cor dos botões */
+        color: #fff; /* Cor do texto dos botões */
+        transition: background-color 0.3s;
+    }
+    button:hover {
+        background-color: #45a049; /* Cor de destaque ao passar o mouse */
+    }
+    #feedback {
+        font-size: 20px;
+        margin-top: 20px;
+        transition: opacity 0.3s;
+    }
+    .correct {
+        color: #4CAF50; /* Cor de feedback correta */
+    }
+    .incorrect {
+        color: #f44336; /* Cor de feedback incorreta */
+    }
+    #hearts {
+        font-size: 24px;
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+    }
+    .heart {
+        color: #f44336; /* Cor do coração */
+        transition: opacity 0.5s, transform 0.5s;
+    }
+    .heart.hidden {
+        opacity: 0; /* Oculta o coração */
+        transform: scale(0.8); /* Reduz o tamanho */
+    }
+    #soundButton {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background-color: transparent;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #fff;
+    }
+    #restartButton {
+        margin-top: 30px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background-color: #f44336; /* Cor do botão de reiniciar */
+        color: #fff; /* Cor do texto do botão de reiniciar */
+        transition: background-color 0.3s;
+    }
+    #restartButton:hover {
+        background-color: #d32f2f; /* Cor de destaque ao passar o mouse */
+    }
+    #errorAnalysis {
+        margin-top: 20px;
+        text-align: left;
+        transition: opacity 0.3s;
+    }
+    #errorAnalysis h2 {
+        color: #f44336; /* Cor do título da análise de erro */
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+    #errorAnalysis p {
+        font-size: 18px;
+        margin-bottom: 5px;
+    }
+    #celebrationContainer {
+        display: none;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #1e1e1e; /* Cor de fundo escura */
+    }
+    #celebrationText {
+        font-size: 24px;
+        color: #fff; /* Cor do texto de comemoração */
+    }
+    #observationsButton {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        padding: 10px 20px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50; /* Cor do botão de observações */
+        color: #fff; /* Cor do texto do botão de observações */
+        transition: background-color 0.3s;
+    }
+    #observationsButton:hover {
+        background-color: #45a049; /* Cor de destaque ao passar o mouse */
+    }
+    #observationsPopup {
+        display: none;
+        position: fixed;
+        bottom: 70px;
+        right: 40px;
+        width: 300px;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #333; /* Cor do pop-up */
+        color: #fff; /* Cor do texto do pop-up */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+    #observationsPopup p {
+        font-size: 16px;
+    }
+</style>
+</head>
+<body>
+    <div id="container">
+        <h1>CommuniQuest</h1>
+        <button id="soundButton" onclick="toggleSound()">🔊</button>
+        <div id="question">Qual tipo de comunicação é representado pela seguinte declaração?</div>
+        <div id="options">
+            <button onclick="checkAnswer('passiva')">Passiva</button>
+            <button onclick="checkAnswer('assertiva')">Assertiva</button>
+            <button onclick="checkAnswer('agressiva')">Agressiva</button>
+        </div>
+        <div id="feedback"></div>
+        <div id="hearts">
+            <span id="heart1" class="heart">❤️</span>
+            <span id="heart2" class="heart">❤️</span>
+            <span id="heart3" class="heart">❤️</span>
+        </div>
+        <div id="score">Pontuação: 0</div>
+        <div id="errorAnalysis" style="display:none;"></div>
+    </div>
+
+    <div id="celebrationContainer">
+        <div id="celebrationText">Parabéns! Você acertou todas as frases. 🎉</div>
+        <audio id="celebrationSound" src="https://www.soundjay.com/human/applause-01.wav" autoplay loop></audio>
+    </div>
+
+    <div id="observationsButton" onclick="togglePopup()">Observações</div>
+
+    <div id="observationsPopup">
+        <p>Esse jogo foi criado para um trabalho escolar sobre Comunicações e Percepções.</p>
+        <p>Feito pelos alunos: <strong>Guilherme Soares, Marcelo Henrique, Mateus Belau, Henrique Guilherme.</strong></p>
+    </div>
+
+    <!-- Efeitos sonoros -->
+    <audio id="correctSound" src="https://cdn.discordapp.com/attachments/1108847401810272270/1219120942232637490/Correct_Answer_sound_effect.mp3?ex=660a25da&is=65f7b0da&hm=07e00019bd17e06d7f3088bb6fb66bc7fbb46fbaa90a6062618a9e45203c3ae2&"></audio>
+    <audio id="incorrectSound" src="https://cdn.discordapp.com/attachments/1108847401810272270/1219121543947354173/WRONG_ANSWER_SOUND_EFFECT.mp3?ex=660a266a&is=65f7b16a&hm=b5e03e1eedab50c9f633c31cc269d52aaaaf627437e00045be86e254854a3358&"></audio>
+
+    <script>
+        var questions = [
+            { statement: "Você poderia me ajudar com isso?", type: "assertiva", explanation: "A assertiva busca expressar necessidades e opiniões de forma clara e respeitosa." },
+            { statement: "Não importa, esqueça.", type: "passiva", explanation: "A passiva tende a evitar conflitos e não expressa claramente suas necessidades." },
+            { statement: "Você é sempre tão arrogante!", type: "agressiva", explanation: "A agressiva ataca ou culpa os outros, desconsiderando seus sentimentos." },
+            { statement: "Eu valorizo sua contribuição, mas discordo.", type: "assertiva", explanation: "A assertiva expressa discordância de forma respeitosa, reconhecendo a contribuição do outro." },
+            { statement: "Você nunca me escuta!", type: "agressiva", explanation: "A agressiva tende a generalizar e atacar, não promovendo uma comunicação construtiva." },
+            { statement: "Não se preocupe com isso.", type: "passiva", explanation: "A passiva muitas vezes minimiza a importância de suas próprias necessidades." },
+            { statement: "Eu gostaria que você me desse mais espaço.", type: "assertiva", explanation: "A assertiva expressa suas necessidades de forma clara, sem culpar o outro." },
+            { statement: "Você é muito incompetente.", type: "agressiva", explanation: "A agressiva utiliza críticas severas e negativas, prejudicando o relacionamento." },
+            { statement: "Eu prefiro que você não me interrompa.", type: "assertiva", explanation: "A assertiva estabelece limites de forma clara e respeitosa." },
+            { statement: "O que você acha disso?", type: "assertiva", explanation: "A assertiva busca a opinião do outro de forma respeitosa." }
+        ];
+
+        var usedIndexes = [];
+        var currentQuestionIndex = null;
+        var score = 0;
+        var lives = 3;
+        var soundEnabled = true;
+
+        function getRandomIndex() {
+            var randomIndex = Math.floor(Math.random() * questions.length);
+            if (usedIndexes.length === questions.length) {
+                usedIndexes = [];
+            }
+            while (usedIndexes.includes(randomIndex)) {
+                randomIndex = Math.floor(Math.random() * questions.length);
+            }
+            usedIndexes.push(randomIndex);
+            return randomIndex;
+        }
+
+        function loadQuestion() {
+            currentQuestionIndex = getRandomIndex();
+            document.getElementById('question').textContent = questions[currentQuestionIndex].statement;
+        }
+
+        function checkAnswer(selectedType) {
+            var correctType = questions[currentQuestionIndex].type;
+            var feedbackElement = document.getElementById('feedback');
+            var scoreElement = document.getElementById('score');
+            var heartElements = document.querySelectorAll('.heart');
+            if (selectedType === correctType) {
+                feedbackElement.innerHTML = "<span class='confirmation'>&#10004;</span> Correto! Esta é uma comunicação " + selectedType + ".";
+                feedbackElement.classList.add('correct');
+                playSound('correctSound');
+                score++;
+            } else {
+                feedbackElement.textContent = "X Incorreto. Esta é uma comunicação " + correctType + ".";
+                feedbackElement.classList.add('incorrect');
+                playSound('incorrectSound');
+                if (lives > 0) {
+                    var lostLifeIndex = 3 - lives;
+                    heartElements[lostLifeIndex].classList.add('hidden'); // Oculta o coração perdido
+                    lives--;
+                }
+            }
+            scoreElement.textContent = "Pontuação: " + score;
+            if (score === 10) {
+                celebration();
+            } else if (lives === 0) {
+                gameOver();
+            } else {
+                setTimeout(function() {
+                    feedbackElement.classList.remove('correct', 'incorrect');
+                    feedbackElement.textContent = "";
+                    loadQuestion();
+                }, 2000);
+            }
+        }
+
+        function gameOver() {
+            var container = document.getElementById('container');
+            container.innerHTML = "<h1>Game Over!</h1><div id='finalScore'>Pontuação Final: " + score + "</div><button id='restartButton' onclick='restartGame()'>Reiniciar Jogo</button>";
+            analyzeErrors();
+        }
+
+        function celebration() {
+            var container = document.getElementById('container');
+            container.style.display = 'none';
+            var celebrationContainer = document.getElementById('celebrationContainer');
+            celebrationContainer.style.display = 'flex';
+            playSound('celebrationSound');
+        }
+
+        function analyzeErrors() {
+            var errorAnalysis = document.getElementById('errorAnalysis');
+            errorAnalysis.style.display = 'block';
+            errorAnalysis.innerHTML = "<h2>Análise dos Erros</h2>";
+            questions.forEach(function(question, index) {
+                if (usedIndexes.includes(index) && question.type !== getAnswer(index)) {
+                    errorAnalysis.innerHTML += "<p><strong>Pergunta:</strong> " + question.statement + "</p><p><strong>Explicação:</strong> " + question.explanation + "</p>";
+                }
+            });
+        }
+
+        function getAnswer(index) {
+            var buttons = document.querySelectorAll('button');
+            if (questions[index].type === 'passiva') return buttons[0].textContent.toLowerCase();
+            if (questions[index].type === 'assertiva') return buttons[1].textContent.toLowerCase();
+            if (questions[index].type === 'agressiva') return buttons[2].textContent.toLowerCase();
+        }
+
+        function restartGame() {
+            location.reload();
+        }
+
+        function playSound(id) {
+            if (soundEnabled) {
+                var audio = document.getElementById(id);
+                audio.currentTime = 0;
+                audio.play();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            var soundButton = document.getElementById('soundButton');
+            soundButton.textContent = soundEnabled ? '🔊' : '🔇';
+        }
+
+        function togglePopup() {
+            var popup = document.getElementById('observationsPopup');
+            if (popup.style.display === 'block') {
+                popup.style.display = 'none';
+            } else {
+                popup.style.display = 'block';
+            }
+        }
+        
+        // Iniciar o jogo
+        loadQuestion();
+    </script>
+</body>
+</html>
